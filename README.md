@@ -64,99 +64,6 @@ func main() {
 }
 ```
 
-### WebSocket 事件监听
-
-```go
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
-
-	kook "github.com/ljwtorch/kook-sdk-go"
-)
-
-func main() {
-	client := kook.NewClient("your-bot-token")
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// 注册消息处理器
-	client.OnMessage(func(ctx context.Context, evt *kook.EventData) {
-		fmt.Printf("Message: %s from %s\n", evt.Content, evt.AuthorID)
-
-		// 自动回复
-		if evt.Content == "ping" && evt.ChannelType == "GROUP" {
-			_, err := client.SendMessage(ctx, evt.TargetID, "pong!")
-			if err != nil {
-				log.Printf("回复消息失败: %v", err)
-			}
-		}
-	})
-
-	// 注册系统事件处理器
-	client.OnSystem(func(ctx context.Context, evt *kook.EventData) {
-		fmt.Printf("System event: %s\n", evt.Content)
-	})
-
-	// 连接 WebSocket
-	go func() {
-		if err := client.Connect(ctx); err != nil {
-			log.Printf("WebSocket 连接错误: %v", err)
-		}
-	}()
-
-	// 等待退出信号
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	<-sigCh
-
-	cancel()
-	client.Disconnect()
-}
-```
-
-### 卡片消息
-
-```go
-package main
-
-import (
-	"context"
-	"log"
-
-	kook "github.com/ljwtorch/kook-sdk-go"
-	"github.com/ljwtorch/kook-sdk-go/card"
-)
-
-func main() {
-	client := kook.NewClient("your-bot-token")
-	ctx := context.Background()
-
-	// 使用 Builder 构建卡片
-	builder := card.New()
-	builder.Card(card.ThemePrimary, card.SizeLarge).
-		Header("通知标题").
-		Section("这是一条通知消息内容").
-		Divider().
-		Section("**重要**: 请查看详情").
-		End()
-
-	cardJSON := builder.Build()
-
-	// 发送卡片消息
-	msg, err := client.SendMessage(ctx, "channel-id", cardJSON)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Card sent: %s", msg.MsgID)
-}
-```
-
 ### API 版本配置
 
 SDK 支持配置 API 版本，默认使用 v3。当 KOOK 官方发布新版本 API 时，可以通过以下方式切换：
@@ -222,8 +129,6 @@ guilds, err := client.GetGuildList(ctx)
 | 服务器助力 (Guild Boost) | 助力历史 | 1 | [API](https://developer.kookapp.cn/doc/http/guild) |
 | 媒体资源 (Asset) | 文件上传 | 1 | [API](https://developer.kookapp.cn/doc/http/asset) |
 
-**总计 67 个 HTTP API 接口**
-
 ## 示例代码
 
 `examples/` 目录包含了可独立运行的示例代码，展示各模块的使用方法。
@@ -255,9 +160,7 @@ go run examples/user/main.go
 go run examples/user/main.go --help
 ```
 
-部分示例需要额外的环境变量，详见各示例的 `--help` 输出。
-
-完整示例说明请参考 [examples/README.md](examples/README.md)。
+部分示例需要额外的环境变量，详见各示例的 `--help` 输出，完整示例说明请参考 [examples/README.md](examples/README.md)。
 
 ## 项目结构
 
