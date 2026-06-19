@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: KOOK 官方文档
+    url: https://developer.kookapp.cn/doc/intro
+    about: 查看 KOOK 开放平台官方文档
+  - name: GitHub Discussions
+    url: https://github.com/ljwtorch/kook-sdk-go/discussions
+    about: 提问和讨论
