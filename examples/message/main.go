@@ -103,7 +103,7 @@ func testListMessages(ctx context.Context, client *kook.Client) {
 		return
 	}
 
-	messages, err := client.ListMessages(ctx, channelID, 1, 10)
+	messages, err := client.ListMessages(ctx, channelID, 10)
 	if err != nil {
 		fmt.Printf("[FAIL] %v\n", err)
 		return
@@ -166,12 +166,12 @@ func testUpdateMessage(ctx context.Context, client *kook.Client) {
 	}
 
 	content := fmt.Sprintf("KOOK Go SDK 测试消息（已编辑）- %d", time.Now().Unix())
-	msg, err := client.UpdateMessage(ctx, msgID, content)
+	err := client.UpdateMessage(ctx, msgID, content)
 	if err != nil {
 		fmt.Printf("[FAIL] %v\n", err)
 		return
 	}
-	fmt.Printf("[OK] 消息已编辑: %s\n", msg.Content)
+	fmt.Printf("[OK] 消息已编辑: %s\n", content)
 }
 
 func testAddReaction(ctx context.Context, client *kook.Client) {

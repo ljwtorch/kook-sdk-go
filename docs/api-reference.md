@@ -68,8 +68,12 @@ err := client.OfflineBot(ctx)
 ### 获取机器人在线状态
 
 ```go
-online, err := client.GetBotOnlineStatus(ctx)
-// 返回 bool
+status, err := client.GetBotOnlineStatus(ctx)
+// 返回 *model.BotOnlineStatus
+if status.Online {
+    fmt.Println("机器人在线")
+    fmt.Printf("在线平台: %v\n", status.OnlineOS)
+}
 ```
 
 ---
@@ -507,20 +511,21 @@ intimacy, err := api.GetIntimacy(ctx, client, "user-id")
 **返回字段：**
 - `ImgURL` - 形象图片 URL
 - `Score` - 亲密度分数
-- `Social` - 社交信息
+- `SocialInfo` - 社交信息
 - `LastRead` - 上次查看时间
+- `LastModify` - 最后修改时间
 - `ImgList` - 形象图片列表
 
 ### 更新亲密度
 
 ```go
-err := client.UpdateIntimacy(ctx, "user-id", 10, "社交信息", 0)
+err := client.UpdateIntimacy(ctx, "user-id", 10, "社交信息", "")
 ```
 
 **参数：**
 - `userID` - 用户 ID
-- `score` - 亲密度分数增量
-- `socialInfo` - 社交信息
+- `score` - 亲密度分数（0-2200）
+- `socialInfo` - 社交信息（500字以内）
 - `imgID` - 形象图片 ID
 
 ---

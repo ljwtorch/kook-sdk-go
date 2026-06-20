@@ -14,7 +14,7 @@ type InviteInfo struct {
 	ChannelID string      `json:"channel_id"`
 	Status    int         `json:"status"`
 	ExpireAt  int64       `json:"expire_at"`
-	Creator   *model.User `json:"creator"`
+	User      *model.User `json:"user"`
 }
 
 // InviteeInfo 表示被邀请用户的信息。
@@ -49,11 +49,14 @@ type inviteURLResult struct {
 }
 
 // ListInvites 获取服务器或频道的邀请列表，支持分页。
+// 参考文档：https://developer.kookapp.cn/doc/http/invite#获取邀请列表
 // GET /invite/list
 //
+// 服务器 ID 或者频道 ID 必须填一个。
+//
 // 参数说明：
-//   - guildID: 服务器 ID
-//   - channelID: 频道 ID
+//   - guildID: 服务器 ID，与 channelID 至少填一个
+//   - channelID: 频道 ID，与 guildID 至少填一个
 //   - page: 页码，传 0 使用默认值
 //   - pageSize: 每页数量，传 0 使用默认值
 func ListInvites(ctx context.Context, client Doer, guildID string, channelID string, page int, pageSize int) (*model.PageResult[InviteInfo], error) {
@@ -80,13 +83,16 @@ func ListInvites(ctx context.Context, client Doer, guildID string, channelID str
 }
 
 // CreateInvite 创建服务器或频道的邀请链接。
+// 参考文档：https://developer.kookapp.cn/doc/http/invite#创建邀请链接
 // POST /invite/create
 //
+// 服务器 ID 或者频道 ID 必须填一个。
+//
 // 参数说明：
-//   - guildID: 服务器 ID
-//   - channelID: 频道 ID
-//   - duration: 邀请有效期（秒），传 0 表示永久
-//   - settingTimes: 邀请使用次数限制，传 0 表示不限
+//   - guildID: 服务器 ID，与 channelID 至少填一个
+//   - channelID: 频道 ID，与 guildID 至少填一个
+//   - duration: 邀请链接有效时长（秒），默认 7 天。可选值：0=永不，1800=0.5小时，3600=1小时，21600=6小时，43200=12小时，86400=1天，604800=7天
+//   - settingTimes: 邀请使用次数限制，默认 -1（无限制）。可选值：-1=无限制，1/5/10/25/50/100
 //
 // 返回创建的邀请链接 URL。
 func CreateInvite(ctx context.Context, client Doer, guildID string, channelID string, duration int, settingTimes int) (string, error) {
@@ -131,6 +137,7 @@ func WithDeleteInviteChannelID(channelID string) DeleteInviteOption {
 }
 
 // DeleteInvite 删除指定的邀请链接。
+// 参考文档：https://developer.kookapp.cn/doc/http/invite#删除邀请链接
 // POST /invite/delete
 //
 // 参数说明：
@@ -190,10 +197,11 @@ func WithInviteesEndTime(t string) ListInviteesOption {
 }
 
 // ListInvitees 获取被邀请用户列表，支持分页。
+// 参考文档：https://developer.kookapp.cn/doc/http/invite#邀请用户列表
 // GET /invite/invitees
 //
 // 参数说明：
-//   - guildID: 服务器 ID（必填）
+//   - guildID: 服务器 ID
 //   - page: 页码（必填）
 //   - pageSize: 每页数量（必填）
 //   - opts: 可选参数，包括 id（邀请码）、inviteURL（邀请链接）、status（状态筛选）、startTime、endTime

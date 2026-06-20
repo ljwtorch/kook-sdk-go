@@ -34,25 +34,25 @@ func (c *Client) OfflineBot(ctx context.Context) error {
 }
 
 // GetBotOnlineStatus 获取机器人当前在线状态。
-func (c *Client) GetBotOnlineStatus(ctx context.Context) (bool, error) {
+func (c *Client) GetBotOnlineStatus(ctx context.Context) (*model.BotOnlineStatus, error) {
 	return api.GetBotOnlineStatus(ctx, c)
 }
 
 // --- 服务器 ---
 
 // GetGuildList 获取当前用户加入的服务器列表。
-func (c *Client) GetGuildList(ctx context.Context) (*model.PageResult[model.Guild], error) {
-	return api.GetGuildList(ctx, c)
+func (c *Client) GetGuildList(ctx context.Context, page int, pageSize int) (*model.PageResult[model.Guild], error) {
+	return api.GetGuildList(ctx, c, page, pageSize, "")
 }
 
-// GetGuild 获取指定服务器的详细信息。
-func (c *Client) GetGuild(ctx context.Context, guildID string) (*model.Guild, error) {
+// GetGuild 获取指定服务器的详细信息，包含角色和频道列表。
+func (c *Client) GetGuild(ctx context.Context, guildID string) (*model.GuildDetail, error) {
 	return api.GetGuild(ctx, c, guildID)
 }
 
 // GetGuildUserList 获取服务器成员列表。
 func (c *Client) GetGuildUserList(ctx context.Context, guildID string, page int, pageSize int) (*model.PageResult[model.GuildUser], error) {
-	return api.GetGuildUserList(ctx, c, guildID, page, pageSize, "", "", 0, false, 0, 0)
+	return api.GetGuildUserList(ctx, c, guildID, page, pageSize, "", "", 0, -1, -1, -1, "")
 }
 
 // SetGuildNickname 修改用户在服务器中的昵称。
@@ -74,25 +74,22 @@ func (c *Client) KickoutGuildMember(ctx context.Context, guildID string, targetI
 
 // ListChannels 获取指定服务器下的频道列表。
 func (c *Client) ListChannels(ctx context.Context, guildID string) (*model.ListResult[model.Channel], error) {
-	return api.ListChannels(ctx, c, guildID)
+	return api.ListChannels(ctx, c, guildID, 0, 0, 0, "")
 }
 
 // GetChannel 获取指定频道的详细信息。
 func (c *Client) GetChannel(ctx context.Context, targetID string) (*model.Channel, error) {
-	return api.GetChannel(ctx, c, targetID)
+	return api.GetChannel(ctx, c, targetID, false)
 }
 
 // CreateChannel 在指定服务器中创建新频道。
-//
-// 参考文档：https://developer.kookapp.cn/doc/http/channel#创建频道
 func (c *Client) CreateChannel(ctx context.Context, guildID string, name string, typ int, parentID string, limitAmount int, voiceQuality string, isCategory int) (*model.Channel, error) {
 	return api.CreateChannel(ctx, c, guildID, name, typ, parentID, limitAmount, voiceQuality, isCategory)
 }
 
 // UpdateChannel 编辑指定频道的信息。
-// slowMode 参数：慢速模式间隔（毫秒），传 0 表示关闭慢速模式，传 -1 表示不修改
 func (c *Client) UpdateChannel(ctx context.Context, channelID string, name string, topic string, slowMode int) (*model.Channel, error) {
-	return api.UpdateChannel(ctx, c, channelID, name, topic, slowMode)
+	return api.UpdateChannel(ctx, c, channelID, name, topic, slowMode, -1, "", -1, "", "")
 }
 
 // DeleteChannel 删除指定频道。
@@ -103,24 +100,24 @@ func (c *Client) DeleteChannel(ctx context.Context, channelID string) error {
 // --- 频道消息 ---
 
 // SendMessage 发送频道消息的快捷方法。
-// 等同于 api.CreateMessage(ctx, c, targetID, content, "", "", "")。
+// 等同于 api.CreateMessage(ctx, c, targetID, content, 0, "", "", "", "", "")。
 func (c *Client) SendMessage(ctx context.Context, targetID string, content string) (*api.CreateMessageResponse, error) {
-	return api.CreateMessage(ctx, c, targetID, content, "", "", "")
+	return api.CreateMessage(ctx, c, targetID, content, 0, "", "", "", "", "")
 }
 
 // SendReplyMessage 发送带引用的频道消息。
 func (c *Client) SendReplyMessage(ctx context.Context, targetID string, content string, quoteMsgID string) (*api.CreateMessageResponse, error) {
-	return api.CreateMessage(ctx, c, targetID, content, quoteMsgID, "", "")
+	return api.CreateMessage(ctx, c, targetID, content, 0, quoteMsgID, "", "", "", "")
 }
 
 // SendMessageEx 发送频道消息（完整参数）。
 func (c *Client) SendMessageEx(ctx context.Context, targetID string, content string, quote string, nonce string, tempTargetID string) (*api.CreateMessageResponse, error) {
-	return api.CreateMessage(ctx, c, targetID, content, quote, nonce, tempTargetID)
+	return api.CreateMessage(ctx, c, targetID, content, 0, quote, nonce, tempTargetID, "", "")
 }
 
 // UpdateMessage 更新已发送的频道消息。
-func (c *Client) UpdateMessage(ctx context.Context, msgID string, content string) (*model.Message, error) {
-	return api.UpdateMessage(ctx, c, msgID, content, "", "")
+func (c *Client) UpdateMessage(ctx context.Context, msgID string, content string) error {
+	return api.UpdateMessage(ctx, c, msgID, content, "", "", "", "")
 }
 
 // DeleteMessage 删除指定的频道消息。
@@ -128,9 +125,10 @@ func (c *Client) DeleteMessage(ctx context.Context, msgID string) error {
 	return api.DeleteMessage(ctx, c, msgID)
 }
 
-// ListMessages 获取频道消息列表。
-func (c *Client) ListMessages(ctx context.Context, targetID string, page int, pageSize int) (*model.PageResult[model.Message], error) {
-	return api.ListMessages(ctx, c, targetID, "", false, page, pageSize)
+// ListMessages 获取频道消息列表，基于参考消息进行游标分页。
+// 等同于 api.ListMessages(ctx, c, targetID, "", 0, "", pageSize)。
+func (c *Client) ListMessages(ctx context.Context, targetID string, pageSize int) (*model.ListResult[model.Message], error) {
+	return api.ListMessages(ctx, c, targetID, "", 0, "", pageSize)
 }
 
 // GetMessage 获取频道消息详情。
@@ -139,22 +137,17 @@ func (c *Client) GetMessage(ctx context.Context, msgID string) (*model.Message, 
 }
 
 // AddReaction 为消息添加回应（表情）。
-// emoji 参数为表情的数字标识，完整对照表参见 https://img.kookapp.cn/assets/emoji.json
 func (c *Client) AddReaction(ctx context.Context, msgID string, emoji string) error {
 	return api.AddReaction(ctx, c, msgID, emoji)
 }
 
 // DeleteReaction 删除消息的回应。
-// emoji 参数为表情的数字标识，完整对照表参见 https://img.kookapp.cn/assets/emoji.json
 func (c *Client) DeleteReaction(ctx context.Context, msgID string, emoji string, userID string) error {
 	return api.DeleteReaction(ctx, c, msgID, emoji, userID)
 }
 
 // AddReactionWithEmoji 为消息添加回应（表情）。
 // emojiChar 为 Unicode 字符（如 '😆'），会自动转换为 KOOK emoji 格式。
-//
-// KOOK 支持的完整表情对照表请参见：
-// https://img.kookapp.cn/assets/emoji.json
 func (c *Client) AddReactionWithEmoji(ctx context.Context, msgID string, emojiChar rune) error {
 	return api.AddReaction(ctx, c, msgID, emoji.ID(emojiChar))
 }
@@ -162,9 +155,6 @@ func (c *Client) AddReactionWithEmoji(ctx context.Context, msgID string, emojiCh
 // DeleteReactionWithEmoji 删除消息的回应（表情）。
 // emojiChar 为 Unicode 字符（如 '😆'），会自动转换为 KOOK emoji 格式。
 // userID 为空表示删除自己的回应。
-//
-// KOOK 支持的完整表情对照表请参见：
-// https://img.kookapp.cn/assets/emoji.json
 func (c *Client) DeleteReactionWithEmoji(ctx context.Context, msgID string, emojiChar rune, userID string) error {
 	return api.DeleteReaction(ctx, c, msgID, emoji.ID(emojiChar), userID)
 }
@@ -184,17 +174,17 @@ func (c *Client) UnpinMessage(ctx context.Context, msgID string, targetID string
 // SendDirectMessage 发送私聊消息的快捷方法。
 // 通过 targetID（用户 ID）发送私聊。
 func (c *Client) SendDirectMessage(ctx context.Context, targetID string, content string) (*api.CreateMessageResponse, error) {
-	return api.CreateDirectMessage(ctx, c, targetID, "", content, "", "")
+	return api.CreateDirectMessage(ctx, c, targetID, "", content, 0, "", "", "", "")
 }
 
 // SendDirectMessageEx 发送私聊消息（完整参数）。
 func (c *Client) SendDirectMessageEx(ctx context.Context, targetID string, chatCode string, content string, quote string, nonce string) (*api.CreateMessageResponse, error) {
-	return api.CreateDirectMessage(ctx, c, targetID, chatCode, content, quote, nonce)
+	return api.CreateDirectMessage(ctx, c, targetID, chatCode, content, 0, quote, nonce, "", "")
 }
 
 // UpdateDirectMessage 更新已发送的私聊消息。
-func (c *Client) UpdateDirectMessage(ctx context.Context, msgID string, content string) (*model.Message, error) {
-	return api.UpdateDirectMessage(ctx, c, msgID, content, "")
+func (c *Client) UpdateDirectMessage(ctx context.Context, msgID string, content string) error {
+	return api.UpdateDirectMessage(ctx, c, msgID, content, "", "", "")
 }
 
 // DeleteDirectMessage 删除指定的私聊消息。
@@ -237,14 +227,6 @@ func (c *Client) CreateGuildRole(ctx context.Context, guildID string, name strin
 }
 
 // UpdateGuildRole 更新服务器角色的属性。
-//
-// 注意：正常角色由上向下排序，这个先后顺序是角色的优先级（position 字段）。
-// 如果你有管理员权限，你只能管理优先级比自己低的用户，不能管理优先级等于或比自己高的用户。
-//
-// 参考文档：https://developer.kookapp.cn/doc/http/guild-role#更新服务器角色
-//
-// color 参数使用 24 位 RGB 颜色整数，参见 model.Role.Color。
-// permissions 参数为权限位掩码，权限常量定义在 model 包中（如 model.PermAdmin）。
 func (c *Client) UpdateGuildRole(ctx context.Context, guildID string, roleID int64, name string, color int, hoist bool, mentionable bool, permissions int64) (*model.Role, error) {
 	return api.UpdateGuildRole(ctx, c, guildID, roleID, name, color, hoist, mentionable, permissions)
 }
@@ -266,8 +248,8 @@ func (c *Client) RevokeRole(ctx context.Context, guildID string, userID string, 
 
 // --- 频道权限 ---
 
-// GetChannelRoles 获取频道角色权限列表。
-func (c *Client) GetChannelRoles(ctx context.Context, channelID string) (*model.ListResult[model.ChannelRole], error) {
+// GetChannelRoles 获取频道角色权限详情。
+func (c *Client) GetChannelRoles(ctx context.Context, channelID string) (*api.ChannelRoleIndexResult, error) {
 	return api.GetChannelRoles(ctx, c, channelID)
 }
 
@@ -324,7 +306,7 @@ func (c *Client) GetIntimacy(ctx context.Context, userID string) (*api.IntimacyI
 }
 
 // UpdateIntimacy 更新指定用户的亲密度信息。
-func (c *Client) UpdateIntimacy(ctx context.Context, userID string, score int, socialInfo string, imgID int) error {
+func (c *Client) UpdateIntimacy(ctx context.Context, userID string, score int, socialInfo string, imgID string) error {
 	return api.UpdateIntimacy(ctx, c, userID, score, socialInfo, imgID)
 }
 
@@ -348,17 +330,17 @@ func (c *Client) RemoveBlacklist(ctx context.Context, guildID string, targetID s
 // --- 服务器静音 ---
 
 // ListGuildMutes 获取服务器静音/闭麦用户列表。
-func (c *Client) ListGuildMutes(ctx context.Context, guildID string, returnType string, page int, pageSize int) (*model.PageResult[api.GuildMuteUser], error) {
-	return api.ListGuildMutes(ctx, c, guildID, returnType, page, pageSize)
+func (c *Client) ListGuildMutes(ctx context.Context, guildID string, returnType string) (*api.GuildMuteListResult, error) {
+	return api.ListGuildMutes(ctx, c, guildID, returnType)
 }
 
 // CreateGuildMute 对服务器中的用户添加静音或闭麦。
-func (c *Client) CreateGuildMute(ctx context.Context, guildID string, userID string, muteType string) error {
+func (c *Client) CreateGuildMute(ctx context.Context, guildID string, userID string, muteType int) error {
 	return api.CreateGuildMute(ctx, c, guildID, userID, muteType)
 }
 
 // DeleteGuildMute 取消服务器中用户的静音或闭麦状态。
-func (c *Client) DeleteGuildMute(ctx context.Context, guildID string, userID string, muteType string) error {
+func (c *Client) DeleteGuildMute(ctx context.Context, guildID string, userID string, muteType int) error {
 	return api.DeleteGuildMute(ctx, c, guildID, userID, muteType)
 }
 

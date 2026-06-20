@@ -15,7 +15,8 @@ type BoostRecord struct {
 	User      *model.User `json:"user"`
 }
 
-// GetBoostHistory 获取服务器助力历史记录。
+// GetBoostHistory 获取服务器助力历史记录，需要有服务器管理权限。
+// 参考文档：https://developer.kookapp.cn/doc/http/guild#服务器助力历史
 // GET /guild-boost/history
 //
 // 参数说明：

@@ -54,6 +54,48 @@ type Message struct {
 	Quote *Quote `json:"quote"`
 	// Author 是消息作者的用户信息
 	Author *User `json:"author"`
+	// Reactions 是消息的回应列表
+	Reactions []Reaction `json:"reactions"`
+	// MentionInfo 是 @特定用户或特定角色的详细信息
+	MentionInfo *MentionInfo `json:"mention_info"`
+}
+
+// MentionInfo 表示消息中 @特定用户或 @特定角色 的详细信息。
+type MentionInfo struct {
+	// MentionPart 是 @特定用户 的详情列表
+	MentionPart []MentionUser `json:"mention_part"`
+	// MentionRolePart 是 @特定角色 的详情列表
+	MentionRolePart []MentionRolePart `json:"mention_role_part"`
+}
+
+// MentionUser 表示被 @的用户的详细信息。
+type MentionUser struct {
+	// ID 是用户的唯一标识
+	ID string `json:"id"`
+	// Username 是用户名
+	Username string `json:"username"`
+	// FullName 是用户的完整名称（用户名#识别号）
+	FullName string `json:"full_name"`
+	// Avatar 是用户头像 URL
+	Avatar string `json:"avatar"`
+}
+
+// MentionRolePart 表示被 @的角色的详细信息。
+type MentionRolePart struct {
+	// RoleID 是角色 ID
+	RoleID int `json:"role_id"`
+	// Name 是角色名称
+	Name string `json:"name"`
+	// Color 是角色颜色
+	Color int `json:"color"`
+	// Position 是角色位置
+	Position int `json:"position"`
+	// Hoist 是否在成员列表中单独展示
+	Hoist int `json:"hoist"`
+	// Mentionable 是否可被 @
+	Mentionable int `json:"mentionable"`
+	// Permissions 是角色权限
+	Permissions int `json:"permissions"`
 }
 
 // Embed 表示消息中的嵌入内容。
@@ -96,6 +138,8 @@ type Attachment struct {
 type Quote struct {
 	// ID 是被引用消息的 ID
 	ID string `json:"id"`
+	// Type 是被引用消息的类型
+	Type int `json:"type"`
 	// RongID 是被引用消息的融云 ID
 	RongID string `json:"rong_id"`
 	// Content 是被引用消息的内容

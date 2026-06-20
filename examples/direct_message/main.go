@@ -148,12 +148,12 @@ func testUpdateDirectMessage(ctx context.Context, client *kook.Client) {
 	}
 
 	content := fmt.Sprintf("KOOK Go SDK 私聊测试消息（已编辑）- %d", time.Now().Unix())
-	dm, err := client.UpdateDirectMessage(ctx, msgID, content)
+	err := client.UpdateDirectMessage(ctx, msgID, content)
 	if err != nil {
 		fmt.Printf("[FAIL] %v\n", err)
 		return
 	}
-	fmt.Printf("[OK] 私聊消息已编辑: %s\n", dm.Content)
+	fmt.Printf("[OK] 私聊消息已编辑: %s\n", content)
 }
 
 func testDeleteDirectMessage(ctx context.Context, client *kook.Client) {

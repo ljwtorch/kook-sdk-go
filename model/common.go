@@ -59,7 +59,7 @@ type PageMeta struct {
 	Total int `json:"total"`
 }
 
-// PageResult 是分页查询的结果（Go 1.18+ 泛型）。
+// PageResult 是分页查询的结果。
 type PageResult[T any] struct {
 	// Items 是当前页的数据列表
 	Items []T `json:"items"`

@@ -47,7 +47,7 @@ func ListBlacklist(ctx context.Context, client Doer, guildID string, page int, p
 //   - guildID: 服务器 ID（必填）
 //   - targetID: 目标用户 ID（必填）
 //   - remark: 加入黑名单的备注原因
-//   - delMsgDays: 删除最近 N 天的消息（0-7），传 0 表示不删除
+//   - delMsgDays: 删除最近 N 天的消息（0-7），默认为 0
 func AddBlacklist(ctx context.Context, client Doer, guildID string, targetID string, remark string, delMsgDays int) error {
 	body := map[string]interface{}{
 		"guild_id":  guildID,

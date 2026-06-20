@@ -86,7 +86,7 @@ func runTests(ctx context.Context, client *kook.Client) {
 
 func testGetGuildList(ctx context.Context, client *kook.Client) {
 	fmt.Println("\n--- 获取服务器列表 ---")
-	guilds, err := client.GetGuildList(ctx)
+	guilds, err := client.GetGuildList(ctx, 1, 10)
 	if err != nil {
 		fmt.Printf("[FAIL] %v\n", err)
 		return

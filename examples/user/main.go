@@ -139,16 +139,19 @@ func testGetUser(ctx context.Context, client *kook.Client) {
 
 func testGetBotOnlineStatus(ctx context.Context, client *kook.Client) {
 	fmt.Println("\n--- 获取机器人在线状态 ---")
-	online, err := client.GetBotOnlineStatus(ctx)
+	status, err := client.GetBotOnlineStatus(ctx)
 	if err != nil {
 		fmt.Printf("[FAIL] %v\n", err)
 		return
 	}
-	status := "离线"
-	if online {
-		status = "在线"
+	onlineStatus := "离线"
+	if status.Online {
+		onlineStatus = "在线"
 	}
-	fmt.Printf("[OK] 机器人状态: %s\n", status)
+	fmt.Printf("[OK] 机器人状态: %s\n", onlineStatus)
+	if len(status.OnlineOS) > 0 {
+		fmt.Printf("     在线平台: %v\n", status.OnlineOS)
+	}
 }
 
 func testOnlineBot(ctx context.Context, client *kook.Client) {

@@ -9,6 +9,8 @@ import (
 // ListUserChats 获取私聊会话列表，支持分页。
 // GET /user-chat/list
 //
+// 参考文档：https://developer.kookapp.cn/doc/http/user-chat#获取私信聊天会话列表
+//
 // 参数说明：
 //   - page: 页码，传 0 使用默认值
 //   - pageSize: 每页数量，传 0 使用默认值
@@ -30,6 +32,7 @@ func ListUserChats(ctx context.Context, client Doer, page int, pageSize int) (*m
 }
 
 // GetUserChat 获取指定私聊会话的详细信息。
+// 参考文档：https://developer.kookapp.cn/doc/http/user-chat#获取私信聊天会话详情
 // GET /user-chat/view?chat_code={chatCode}
 func GetUserChat(ctx context.Context, client Doer, chatCode string) (*model.UserChat, error) {
 	var result model.UserChat

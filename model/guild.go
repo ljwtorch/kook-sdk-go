@@ -36,6 +36,16 @@ type Guild struct {
 	AutoDeleteTime FlexInt `json:"auto_delete_time"`
 }
 
+// GuildDetail 表示服务器的详细信息，包含角色和频道列表。
+// 由 GetGuild（guild/view）接口返回。
+type GuildDetail struct {
+	Guild
+	// Roles 是服务器的角色列表
+	Roles []Role `json:"roles"`
+	// Channels 是服务器的频道列表
+	Channels []Channel `json:"channels"`
+}
+
 // GuildUser 表示服务器中的用户信息。
 type GuildUser struct {
 	// ID 是用户的唯一标识
